@@ -3,7 +3,13 @@ import FWCore.ParameterSet.Config as cms
 from CommonTools.PileupAlgos.Puppi_cff import puppi as _puppi, puppiCentral as _puppiCentral, puppiForward as _puppiForward, puppiNoLep as _puppiNoLep
 from RecoJets.JetProducers.ak4PFClusterJets_cfi import ak4PFClusterJets
 from RecoJets.JetProducers.ak4PFJets_cfi import ak4PFJets, ak4PFJetsCHS, ak4PFJetsPuppi
-from RecoJets.JetProducers.ak8PFJets_cfi import ak8PFJets, ak8PFJetsCHS, ak8PFJetsPuppi
+#from RecoJets.JetProducers.ak8PFJets_cfi import ak8PFJets, ak8PFJetsCHS, ak8PFJetsPuppi
+from RecoJets.JetProducers.ak8PFJets_cfi import \
+    ak8PFJets, \
+    ak8PFJetsCHS, \
+    ak8PFJetsPuppi, \
+    ak8PFJetsPuppiConstituents, \
+    ak8PFJetsPuppiSoftDrop
 from RecoMET.METProducers.PFClusterMET_cfi import pfClusterMet
 
 def customise_hltPhase2_JME(process):
@@ -401,6 +407,16 @@ def customise_hltPhase2_JME(process):
       srcWeights = 'hltPFPuppi',
 #     jetPtMin = 80.,
     )
+
+    ### Jets: Soft Drop Jet for AK8 Puppi & pT Min is 0 for test
+    process.hltAK8PFPuppiJetsConstituents = ak8PFJetsPuppiConstituents.clone(
+      src = cms.InputTag('hltAK8PFPuppiJets'),
+    )
+    process.hltAK8PFPuppiSoftDropJets = ak8PFJetsPuppiSoftDrop.clone(
+            src = cms.InputTag('hltAK8PFPuppiJetsConstituents', 'constituents'),
+            srcWeights = cms.InputTag('hltPFPuppi'),
+            jetPtMin = 0.0,
+    )
     process.hltAK8PFPuppiJetCorrectorL1 = cms.EDProducer( 'L1FastjetCorrectorProducer',
       srcRho = cms.InputTag( 'fixedGridRhoFastjetAllTmp' ),
       algorithm = cms.string( 'AK8PFPuppiHLT' ),
@@ -490,6 +506,8 @@ def customise_hltPhase2_JME(process):
       + process.hltPFPuppiMETTypeOneCorrector
       + process.hltPFPuppiMETTypeOne
       + process.hltAK8PFPuppiJets
+      + process.hltAK8PFPuppiJetsConstituents ## for soft drop jet
+      + process.hltAK8PFPuppiSoftDropJets ## soft drop jet 
       + process.hltAK8PFPuppiJetCorrectorL1
       + process.hltAK8PFPuppiJetCorrectorL2
       + process.hltAK8PFPuppiJetCorrectorL3

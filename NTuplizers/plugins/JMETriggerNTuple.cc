@@ -18,9 +18,11 @@
 #include "JMETriggerAnalysis/NTuplizers/interface/RecoPFCandidateCollectionContainer.h"
 #include "JMETriggerAnalysis/NTuplizers/interface/PATPackedCandidateCollectionContainer.h"
 #include "JMETriggerAnalysis/NTuplizers/interface/PATPackedGenParticleCollectionContainer.h"
+#include "JMETriggerAnalysis/NTuplizers/interface/RecoGenParticleCollectionContainer.h"// by sk
 #include "JMETriggerAnalysis/NTuplizers/interface/RecoGenJetCollectionContainer.h"
 #include "JMETriggerAnalysis/NTuplizers/interface/L1TPFJetCollectionContainer.h"
 #include "JMETriggerAnalysis/NTuplizers/interface/RecoCaloJetCollectionContainer.h"
+#include "JMETriggerAnalysis/NTuplizers/interface/RecoBasicJetCollectionContainer.h"
 #include "JMETriggerAnalysis/NTuplizers/interface/RecoPFJetCollectionContainer.h"
 #include "JMETriggerAnalysis/NTuplizers/interface/RecoPFClusterJetCollectionContainer.h"
 #include "JMETriggerAnalysis/NTuplizers/interface/PATJetCollectionContainer.h"
@@ -88,8 +90,10 @@ protected:
   std::vector<PATPackedCandidateCollectionContainer> v_patPackedCandidateCollectionContainer_;
   std::vector<PATPackedGenParticleCollectionContainer> v_patPackedGenParticleCollectionContainer_;
   std::vector<RecoGenJetCollectionContainer> v_recoGenJetCollectionContainer_;
+  std::vector<RecoGenParticleCollectionContainer> v_recoGenParticleCollectionContainer_; // by SK
   std::vector<L1TPFJetCollectionContainer> v_l1tPFJetCollectionContainer_;
   std::vector<RecoCaloJetCollectionContainer> v_recoCaloJetCollectionContainer_;
+  std::vector<RecoBasicJetCollectionContainer> v_recoBasicJetCollectionContainer_;
   std::vector<RecoPFJetCollectionContainer> v_recoPFJetCollectionContainer_;
   std::vector<RecoPFClusterJetCollectionContainer> v_recoPFClusterJetCollectionContainer_;
   std::vector<PATJetCollectionContainer> v_patJetCollectionContainer_;
@@ -296,6 +300,17 @@ JMETriggerNTuple::JMETriggerNTuple(const edm::ParameterSet& iConfig)
   for (auto& cc_i : v_patPackedGenParticleCollectionContainer_) {
     cc_i.orderByHighestPt(true);
   }
+  // reco::GenParticleCollection
+  initCollectionContainer<RecoGenParticleCollectionContainer, reco::GenParticle>(
+      iConfig,
+      v_recoGenParticleCollectionContainer_,
+      "recoGenParticleCollections",
+      "reco::GenParticleCollection",
+      stringCutObjectSelectors_map_);
+
+  for (auto& cc_i : v_recoGenParticleCollectionContainer_) {
+    cc_i.orderByHighestPt(false);
+  }
 
   // reco::GenJetCollection
   initCollectionContainer<RecoGenJetCollectionContainer, reco::GenJet>(iConfig,
@@ -335,6 +350,17 @@ JMETriggerNTuple::JMETriggerNTuple(const edm::ParameterSet& iConfig)
       "reco::PFClusterJetCollection",
       stringCutObjectSelectors_map_);
   for (auto& cc_i : v_recoPFClusterJetCollectionContainer_) {
+    cc_i.orderByHighestPt(true);
+  }
+    // reco::BasicJetCollection
+  initCollectionContainer<RecoBasicJetCollectionContainer, reco::BasicJet>(
+      iConfig,
+      v_recoBasicJetCollectionContainer_,
+      "recoBasicJetCollections",
+      "reco::BasicJetCollection",
+      stringCutObjectSelectors_map_);
+
+  for (auto& cc_i : v_recoBasicJetCollectionContainer_) {
     cc_i.orderByHighestPt(true);
   }
 
@@ -598,6 +624,58 @@ JMETriggerNTuple::JMETriggerNTuple(const edm::ParameterSet& iConfig)
                     &patPackedGenParticleCollectionContainer_i.vec_vz());
   }
 
+    for (auto& recoGenParticleCollectionContainer_i :
+     v_recoGenParticleCollectionContainer_) {
+
+     this->addBranch(
+         recoGenParticleCollectionContainer_i.name() + "_pdgId",
+         &recoGenParticleCollectionContainer_i.vec_pdgId());
+   
+     this->addBranch(
+         recoGenParticleCollectionContainer_i.name() + "_status",
+         &recoGenParticleCollectionContainer_i.vec_status());
+   
+     this->addBranch(
+         recoGenParticleCollectionContainer_i.name() + "_statusFlags",
+         &recoGenParticleCollectionContainer_i.vec_statusFlags());
+   
+     this->addBranch(
+         recoGenParticleCollectionContainer_i.name() + "_pt",
+         &recoGenParticleCollectionContainer_i.vec_pt());
+   
+     this->addBranch(
+         recoGenParticleCollectionContainer_i.name() + "_eta",
+         &recoGenParticleCollectionContainer_i.vec_eta());
+   
+     this->addBranch(
+         recoGenParticleCollectionContainer_i.name() + "_phi",
+         &recoGenParticleCollectionContainer_i.vec_phi());
+   
+     this->addBranch(
+         recoGenParticleCollectionContainer_i.name() + "_mass",
+         &recoGenParticleCollectionContainer_i.vec_mass());
+   
+     this->addBranch(
+         recoGenParticleCollectionContainer_i.name() + "_vx",
+         &recoGenParticleCollectionContainer_i.vec_vx());
+   
+     this->addBranch(
+         recoGenParticleCollectionContainer_i.name() + "_vy",
+         &recoGenParticleCollectionContainer_i.vec_vy());
+   
+     this->addBranch(
+         recoGenParticleCollectionContainer_i.name() + "_vz",
+         &recoGenParticleCollectionContainer_i.vec_vz());
+   
+     this->addBranch(
+         recoGenParticleCollectionContainer_i.name() + "_motherIndices",
+         &recoGenParticleCollectionContainer_i.vec_motherIndices());
+   
+     this->addBranch(
+        recoGenParticleCollectionContainer_i.name() + "_daughterIndices",
+        &recoGenParticleCollectionContainer_i.vec_daughterIndices());
+  }
+
   for (auto& recoGenJetCollectionContainer_i : v_recoGenJetCollectionContainer_) {
     this->addBranch(recoGenJetCollectionContainer_i.name() + "_pt", &recoGenJetCollectionContainer_i.vec_pt());
     this->addBranch(recoGenJetCollectionContainer_i.name() + "_eta", &recoGenJetCollectionContainer_i.vec_eta());
@@ -663,6 +741,37 @@ JMETriggerNTuple::JMETriggerNTuple(const edm::ParameterSet& iConfig)
                     &recoPFClusterJetCollectionContainer_i.vec_mass());
     this->addBranch(recoPFClusterJetCollectionContainer_i.name() + "_numberOfDaughters",
                     &recoPFClusterJetCollectionContainer_i.vec_numberOfDaughters());
+  }
+  for (auto& recoBasicJetCollectionContainer_i :
+       v_recoBasicJetCollectionContainer_) {
+    this->addBranch(
+        recoBasicJetCollectionContainer_i.name() + "_energy",
+        &recoBasicJetCollectionContainer_i.vec_energy());
+
+    this->addBranch(
+        recoBasicJetCollectionContainer_i.name() + "_pt",
+        &recoBasicJetCollectionContainer_i.vec_pt());
+
+    this->addBranch(
+        recoBasicJetCollectionContainer_i.name() + "_eta",
+        &recoBasicJetCollectionContainer_i.vec_eta());
+
+    this->addBranch(
+        recoBasicJetCollectionContainer_i.name() + "_phi",
+        &recoBasicJetCollectionContainer_i.vec_phi());
+
+    this->addBranch(
+        recoBasicJetCollectionContainer_i.name() + "_mass",
+        &recoBasicJetCollectionContainer_i.vec_mass());
+
+    this->addBranch(
+        recoBasicJetCollectionContainer_i.name() + "_jetArea",
+        &recoBasicJetCollectionContainer_i.vec_jetArea());
+
+    this->addBranch(
+        recoBasicJetCollectionContainer_i.name() +
+            "_numberOfDaughters",
+        &recoBasicJetCollectionContainer_i.vec_numberOfDaughters());
   }
 
   for (auto& recoPFJetCollectionContainer_i : v_recoPFJetCollectionContainer_) {
@@ -1071,6 +1180,45 @@ void JMETriggerNTuple::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   this->fillCollectionContainer<PATPackedGenParticleCollectionContainer, pat::PackedGenParticle>(
       iEvent, v_patPackedGenParticleCollectionContainer_, fillCollectionConditionMap_);
 
+// reco::GenParticleCollection
+if (not iEvent.isRealData()) {
+
+  for (auto& collContainer_i :
+       v_recoGenParticleCollectionContainer_) {
+
+    collContainer_i.clear();
+
+    if (fillCollectionConditionMap_.has(collContainer_i.name()) &&
+        (not fillCollectionConditionMap_.accept(
+            collContainer_i.name()))) {
+      continue;
+    }
+
+    edm::Handle<std::vector<reco::GenParticle>> i_handle;
+    iEvent.getByToken(collContainer_i.token(), i_handle);
+
+    if (i_handle.isValid()) {
+
+      // Fill the standard GenParticle information.
+      collContainer_i.fill(*i_handle);
+
+      // Fill mother/daughter indices using the complete
+      // original reco::GenParticle collection.
+      collContainer_i.fillMotherDaughterIndices(*i_handle);
+
+    } else {
+
+      edm::LogWarning(
+          "JMETriggerNTuple::fillRecoGenParticleCollection")
+          << "invalid handle for input collection: \""
+          << collContainer_i.inputTagLabel()
+          << "\" (NTuple branches: \""
+          << collContainer_i.name()
+          << "_*\")";
+    }
+  }
+}  // by SK
+
   // reco::GenJetCollection
   if (not iEvent.isRealData()) {
     this->fillCollectionContainer<RecoGenJetCollectionContainer, reco::GenJet>(
@@ -1088,7 +1236,13 @@ void JMETriggerNTuple::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   // reco::PFClusterJetCollection
   this->fillCollectionContainer<RecoPFClusterJetCollectionContainer, reco::PFClusterJet>(
       iEvent, v_recoPFClusterJetCollectionContainer_, fillCollectionConditionMap_);
-
+  // reco::BasicJetCollection
+  this->fillCollectionContainer<
+      RecoBasicJetCollectionContainer,
+      reco::BasicJet>(
+      iEvent,
+      v_recoBasicJetCollectionContainer_,
+      fillCollectionConditionMap_);
   // reco::PFJetCollection
   this->fillCollectionContainer<RecoPFJetCollectionContainer, reco::PFJet>(
       iEvent, v_recoPFJetCollectionContainer_, fillCollectionConditionMap_);

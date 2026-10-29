@@ -114,20 +114,20 @@ opts.parseArguments()
 
 
 if opts.reco == 'default':  
-  from JMETriggerAnalysis.Common.configs.HLT_75e33_D110_cfg import cms, process
+  from JMETriggerAnalysis.Common.configs.HLT_75e33_D110_SoftDrop_cfg import cms, process
 
 elif opts.reco == 'enableHGCALregression':
-   from JMETriggerAnalysis.Common.configs.HLT_75e33_D110_cfg import cms, process
+   from JMETriggerAnalysis.Common.configs.HLT_75e33_D110_SoftDrop_cfg import cms, process
    process.hltTiclTrackstersCLUE3DHigh.pluginInferenceAlgoTracksterInferenceByCNNv4.doRegression = cms.int32(1)
 
 elif opts.reco == 'trimmedTracking':
-  from JMETriggerAnalysis.Common.configs.HLT_75e33_D110_cfg import cms, process
+  from JMETriggerAnalysis.Common.configs.HLT_75e33_D110_SoftDrop_cfg import cms, process
   from HLTrigger.Configuration.customizeHLTforTrimmedTracking import customizeHLTforTrimmedTracking
   # Only for trimmed tracking 
   process = customizeHLTforTrimmedTracking(process)
 
 elif opts.reco == 'mixedPF':
-  from JMETriggerAnalysis.Common.configs.HLT_75e33_D110_cfg import cms, process
+  from JMETriggerAnalysis.Common.configs.HLT_75e33_D110_SoftDrop_cfg import cms, process
   from HLTrigger.Configuration.customizeHLTforTrimmedTracking import customizeHLTforTrimmedTrackingMixedPF
   # Trimmed tracking + Mixed PF
   process = customizeHLTforTrimmedTrackingMixedPF(process)
@@ -500,6 +500,10 @@ process.JMETriggerNTuple = cms.EDAnalyzer('JMETriggerNTuple',
      ##genParticles = cms.InputTag("packedGenParticles")
   ),
 
+  recoGenParticleCollections = cms.PSet(
+    genParticles = cms.InputTag('genParticles'),
+  ),
+
   recoGenJetCollections = cms.PSet(
     ak4GenJetsNoNu = cms.InputTag('ak4GenJetsNoNu::HLT'),
     ak8GenJetsNoNu = cms.InputTag('ak8GenJetsNoNu::HLT'),
@@ -528,6 +532,12 @@ process.JMETriggerNTuple = cms.EDAnalyzer('JMETriggerNTuple',
 #   hltAK8PFClusterJets = cms.InputTag('hltAK8PFClusterJets'),
   ),
 
+  recoBasicJetCollections = cms.PSet(
+    hltAK8PFPuppiSoftDropJets = cms.InputTag(
+        'hltAK8PFPuppiSoftDropJets'
+    ),
+  ),
+
   recoPFJetCollections = cms.PSet(
 
 #    l1tAK4CaloJets = cms.InputTag('ak4PFL1Calo'),
@@ -537,15 +547,22 @@ process.JMETriggerNTuple = cms.EDAnalyzer('JMETriggerNTuple',
     hltAK4PFJets = cms.InputTag('hltAK4PFJets'),
     hltAK4PFCHSJets = cms.InputTag('hltAK4PFCHSJets'),
 ##    hltAK4PFJetsCorrected = cms.InputTag('hltAK4PFJetsCorrected'),
-#    hltAK8PFJets = cms.InputTag('hltAK8PFJets'),
-#    hltAK8PFJetsCorrected = cms.InputTag('hltAK8PFJetsCorrected'),
+    hltAK8PFJets = cms.InputTag('hltAK8PFJets'),
+    hltAK8PFJetsCorrected = cms.InputTag('hltAK8PFJetsCorrected'),
 #    hltAK8PFJets = hltAK4PFCHSJets('hltAK4PFCHSJets'),
 ##    hltAK4PFCHSJetsCorrected = cms.InputTag('hltAK4PFCHSJetsCorrected'),
 #    hltAK8PFCHSJetsCorrected = cms.InputTag('hltAK8PFCHSJetsCorrected'),
+    hltAK8PFCHSJets = cms.InputTag('hltAK8PFCHSJets'), # Updated by SK
+    hltAK8PFCHSJetsCorrected = cms.InputTag('hltAK8PFCHSJetsCorrected'), # Updated by SK
     hltAK4PFPuppiJets = cms.InputTag('hltAK4PFPuppiJets'),
     hltAK4PFPuppiJetsCorrected = cms.InputTag('hltAK4PFPuppiJetsCorrected'),
-#    hltAK8PFPuppiJets = cms.InputTag('hltAK8PFPuppiJets'),
-#    hltAK8PFPuppiJetsCorrected = cms.InputTag('hltAK8PFPuppiJetsCorrected'),
+    hltAK8PFPuppiJets = cms.InputTag('hltAK8PFPuppiJets'),
+    hltAK8PFPuppiJetsCorrected = cms.InputTag('hltAK8PFPuppiJetsCorrected'),
+    #hltAK8PFPuppiSoftDropJets = cms.InputTag('hltAK8PFPuppiSoftDropJets'),# Updated by SK . This is now working... 
+    hltAK8PFPuppiSoftDropSubJets = cms.InputTag(
+    'hltAK8PFPuppiSoftDropJets',
+    'SubJets',
+),
 #     offlineAK4PFPuppiJets = cms.InputTag('offlineAK4PFPuppiJets'), # with rerunPUPPI option
 #     offlineAK4PFPuppiJetsCorrected = cms.InputTag('offlineAK4PFPuppiJetsCorrected') # with rerunPUPPI option
   ),
@@ -639,9 +656,15 @@ process.JMETriggerNTuple = cms.EDAnalyzer('JMETriggerNTuple',
     # HLT AK8
     hltAK8CaloJets = cms.string(ak8jets_stringCut),
     hltAK8PFClusterJets = cms.string(ak8jets_stringCut),
+    hltAK8PFJets = cms.string(ak8jets_stringCut), ## Updated by SK
     hltAK8PFJetsCorrected = cms.string(ak8jets_stringCut),
-    hltAK8PFCHSJetsCorrected = cms.string(ak8jets_stringCut),
+    hltAK8PFCHSJets = cms.string(ak8jets_stringCut),## Updated by SK
+    hltAK8PFCHSJetsCorrected = cms.string(ak8jets_stringCut), ## Updated by SK
     hltAK8PFPuppiJetsCorrected = cms.string(ak8jets_stringCut),
+    hltAK8PFPuppiJets = cms.string(ak8jets_stringCut),## Updated by SK 
+    hltAK8PFPuppiSoftDropJets = cms.string(ak8jets_stringCut), ## Updated by SK
+    hltAK8PFPuppiSoftDropSubJets = cms.string(ak8jets_stringCut),
+
 
     # Offline
     offlineAK4PFCHSJetsCorrected = cms.string(ak4jets_stringCut),
@@ -679,10 +702,12 @@ if opts.onlyTriggerResultsInNTuple:
    process.JMETriggerNTuple.recoPFCandidateCollections = cms.PSet()
    process.JMETriggerNTuple.patPackedCandidateCollections = cms.PSet()
    process.JMETriggerNTuple.patPackedGenParticleCollections = cms.PSet()
+   process.JMETriggerNTuple.recoGenParticleCollections = cms.PSet()
    process.JMETriggerNTuple.recoGenJetCollections = cms.PSet()
    process.JMETriggerNTuple.l1tPFJetCollections = cms.PSet()
    process.JMETriggerNTuple.recoCaloJetCollections = cms.PSet()
    process.JMETriggerNTuple.recoPFClusterJetCollections = cms.PSet()
+   process.JMETriggerNTuple.recoBasicJetCollections = cms.PSet()
    process.JMETriggerNTuple.recoPFJetCollections = cms.PSet()
    process.JMETriggerNTuple.patJetCollections = cms.PSet()
    process.JMETriggerNTuple.recoGenMETCollections = cms.PSet()
@@ -998,6 +1023,29 @@ if opts.logs:
    )
 
 
+
+
+
+
+
+# Temporary EDM output for checking SoftDrop products
+process.softDropDebugOutput = cms.OutputModule(
+    "PoolOutputModule",
+    fileName = cms.untracked.string("softdrop_debug_edm.root"),
+    outputCommands = cms.untracked.vstring(
+        "drop *",
+        "keep *_hltAK8PFPuppiSoftDropJets_*_*",
+        "keep *_hltAK8PFPuppiJets_*_*",
+    ),
+)
+
+process.softDropDebugEndPath = cms.EndPath(
+    process.softDropDebugOutput
+)
+
+process.schedule_().extend([
+    process.softDropDebugEndPath
+])
 
 process.prune()
 
